@@ -13,13 +13,26 @@ class SearchViewController: UIViewController {
     var searchResults = [SearchResult]()
     var hasSearched = false
     
+    //将多处使用的字符串定义到结构体内，方便使用
+    struct TableViewCellIdentifiers {
+        static let searchResultCell = "SearchResultCell"
+        static let nothingFoundCell = "NothingFoundCell"
+    }
+    
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        tableView.rowHeight = 80
         tableView.contentInset = UIEdgeInsets.init(top: 64, left: 0, bottom: 0, right: 0)
+        
+        //获取设计好的cell并注册到tableView
+        var cellNib = UINib(nibName: TableViewCellIdentifiers.searchResultCell, bundle: nil)
+        tableView.registerNib(cellNib, forCellReuseIdentifier: TableViewCellIdentifiers.searchResultCell)
+        cellNib = UINib(nibName: TableViewCellIdentifiers.nothingFoundCell, bundle: nil)
+        tableView.registerNib(cellNib, forCellReuseIdentifier: TableViewCellIdentifiers.nothingFoundCell)
     }
 
     override func didReceiveMemoryWarning() {
@@ -72,23 +85,30 @@ extension SearchViewController:UITableViewDataSource {
         }
     }
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+
+//使用标准的cell必须使用下面注释的代码
+//        let cellIdentifier = "SearchResultCell"
+//        var cell:UITableViewCell! = tableView.dequeueReusableCellWithIdentifier(cellIdentifier)
+//        if cell == nil {
+//            cell = UITableViewCell(style: .Subtitle, reuseIdentifier: cellIdentifier)
+//        }
         
-        let cellIdentifier = "SearchResultCell"
-        var cell:UITableViewCell! = tableView.dequeueReusableCellWithIdentifier(cellIdentifier)
-        if cell == nil {
-            cell = UITableViewCell(style: .Subtitle, reuseIdentifier: cellIdentifier)
-        }
-        
+//使用自己设计的cell仅需使用一行代码定义cell，当然前面必须要注册到tableView
         if searchResults.count == 0 {
-            cell.textLabel!.text = "(Not found)"
-            cell.detailTextLabel!.text = ""
+            
+            return tableView.dequeueReusableCellWithIdentifier(TableViewCellIdentifiers.nothingFoundCell, forIndexPath: indexPath)
+            
         }
         else{
-        cell.textLabel!.text = searchResults[indexPath.row].name
-        cell.detailTextLabel!.text = searchResults[indexPath.row].artistName
+            let cell = tableView.dequeueReusableCellWithIdentifier(TableViewCellIdentifiers.searchResultCell, forIndexPath: indexPath) as! SearchResultCell
+            
+            let searchResult = searchResults[indexPath.row]
+            cell.nameLabel.text = searchResult.name
+            cell.artistNameLabel.text = searchResult.artistName
+            
+            return cell
         
         }
-        return cell
     }
 }
 
@@ -99,12 +119,12 @@ extension SearchViewController:UITableViewDelegate {
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
-    func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-        if searchResults.count == 0 {
-            return nil
-        } else {
-            return indexPath
-        }
-    }
+//    func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+//        if searchResults.count == 0 {
+//            return nil
+//        } else {
+//            return indexPath
+//        }
+   // }
     
 }
