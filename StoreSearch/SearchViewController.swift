@@ -25,6 +25,9 @@ class SearchViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //程序启动后，立即弹出键盘
+        searchBar.becomeFirstResponder()
+        
         tableView.rowHeight = 80
         tableView.contentInset = UIEdgeInsets.init(top: 64, left: 0, bottom: 0, right: 0)
         
@@ -33,6 +36,7 @@ class SearchViewController: UIViewController {
         tableView.registerNib(cellNib, forCellReuseIdentifier: TableViewCellIdentifiers.searchResultCell)
         cellNib = UINib(nibName: TableViewCellIdentifiers.nothingFoundCell, bundle: nil)
         tableView.registerNib(cellNib, forCellReuseIdentifier: TableViewCellIdentifiers.nothingFoundCell)
+        //nothingFoundCell没有其它属性，直接注册nib(.xib)
     }
 
     override func didReceiveMemoryWarning() {
@@ -47,7 +51,8 @@ extension SearchViewController:UISearchBarDelegate{
     
     func searchBarSearchButtonClicked(searchBar: UISearchBar) {
         
-        searchBar.resignFirstResponder() //让键盘在点击search后消失
+        //让键盘在点击search后消失
+        searchBar.resignFirstResponder()
         
         searchResults = [SearchResult]()
         
