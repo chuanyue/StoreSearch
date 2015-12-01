@@ -43,7 +43,22 @@ class SearchViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
+    
+    func urlWithSearchText (searchText:String) -> NSURL{
+        let escapedSearchText = searchText.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())!
+        let urlString = String(format: "https://itunes.apple.com/search?term=%@",  escapedSearchText)
+        let url = NSURL(string: urlString)
+        return url!
+    }
+    
+    func performStoreRequestWithURL(url:NSURL) -> String?{
+        do{
+            return try String(contentsOfURL: url, encoding: NSUTF8StringEncoding)
+        }catch{
+            print("Downdoad Error:\(error)")
+            return nil
+        }
+    }
 
 }
 
@@ -51,23 +66,22 @@ extension SearchViewController:UISearchBarDelegate{
     
     func searchBarSearchButtonClicked(searchBar: UISearchBar) {
         
-        //让键盘在点击search后消失
-        searchBar.resignFirstResponder()
-        
-        searchResults = [SearchResult]()
-        
-        if searchBar.text != "Justin bieber"{
-            for i in 0...2{
-                let searchResult = SearchResult()
-                searchResult.name = String(format:"Fake Result %d for", i)
-                searchResult.artistName = searchBar.text!
-                searchResults.append(searchResult)
-                
+        if !searchBar.text!.isEmpty {
+            //让键盘在点击search后消失
+            searchBar.resignFirstResponder()
+            
+            searchResults = [SearchResult]()
+            
+            let url = urlWithSearchText(searchBar.text!)
+            print("URL:\(url)")
+            
+            if let jsonString = performStoreRequestWithURL(url){
+                print("Received JSON string:\(jsonString)")
             }
-        }
-        
-        hasSearched = true
-        tableView.reloadData()
+            
+            hasSearched = true
+            tableView.reloadData()
+            }
         
         }
     
@@ -91,14 +105,6 @@ extension SearchViewController:UITableViewDataSource {
     }
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
 
-//使用标准的cell必须使用下面注释的代码
-//        let cellIdentifier = "SearchResultCell"
-//        var cell:UITableViewCell! = tableView.dequeueReusableCellWithIdentifier(cellIdentifier)
-//        if cell == nil {
-//            cell = UITableViewCell(style: .Subtitle, reuseIdentifier: cellIdentifier)
-//        }
-        
-//使用自己设计的cell仅需使用一行代码定义cell，当然前面必须要注册到tableView
         if searchResults.count == 0 {
             
             return tableView.dequeueReusableCellWithIdentifier(TableViewCellIdentifiers.nothingFoundCell, forIndexPath: indexPath)
@@ -124,12 +130,5 @@ extension SearchViewController:UITableViewDelegate {
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
     }
     
-//    func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-//        if searchResults.count == 0 {
-//            return nil
-//        } else {
-//            return indexPath
-//        }
-   // }
     
 }
